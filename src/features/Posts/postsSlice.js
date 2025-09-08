@@ -1,52 +1,35 @@
 import { createSlice, nanoid, createAsyncThunk } from '@reduxjs/toolkit';
 import { sub } from 'date-fns';
-// import axios from 'axios';
+import axios from 'axios';
 
-// const POSTS_URL = 'https://jsonplaceholder.typicode.com/posts';
+const POSTS_URL = 'https://jsonplaceholder.typicode.com/posts';
 
-const initialState = [
-  {
-    id: '1',
-    title: 'Learning Redux Toolkit',
-    content: "I've heard good things.",
-    date: sub(new Date(), { minutes: 10 }).toISOString(),
-    reactions: {
-      thumbsUp: 0,
-      wow: 0,
-      heart: 0,
-      rocket: 0,
-      coffee: 0,
-    },
+const initialState = {
+  posts: [],
+  status: 'idle', //'idle'|'loading'|'succeeded'|'failed'}
+  error: null,
+};
+
+export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
+  try {
+    const res = await axios.get(POSTS_URL);
+    return res.data;
+  } catch (error) {
+    return error.message;
+  }
+});
+
+export const addNewPost = createAsyncThunk(
+  'posts/createPosts',
+  async (initialPost) => {
+    try {
+      const res = await axios.post(POSTS_URL, initialPost);
+      return res.data;
+    } catch (error) {
+      return error.message;
+    }
   },
-  {
-    id: '2',
-    title: 'Slices...',
-    content: 'The more I say slice, the more I want pizza.',
-    date: sub(new Date(), { minutes: 5 }).toISOString(),
-    reactions: {
-      thumbsUp: 0,
-      wow: 0,
-      heart: 0,
-      rocket: 0,
-      coffee: 0,
-    },
-  },
-];
-
-// const initialState = {
-//   posts: [],
-//   status: 'idle', //'idle'|'loading'|'succeeded'|'failed'}
-//   error: null,
-// };
-
-// export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
-//   try {
-//     const res = await axios.get(POSTS_URL);
-//     return [...res.data];
-//   } catch (error) {
-//     return error.message;
-//   }
-// });
+);
 
 const postSlice = createSlice({
   name: 'posts',
@@ -56,12 +39,12 @@ const postSlice = createSlice({
       reducer(state, action) {
         state.posts.push(action.payload); // uses immer under the hood - > creates new state underneath
       },
-      prepare(title, content, userId) {
+      prepare(title, body, userId) {
         return {
           payload: {
             id: nanoid(),
             title,
-            content,
+            body,
             date: new Date().toISOString(),
             userId,
             reactions: {
@@ -83,37 +66,58 @@ const postSlice = createSlice({
       }
     },
   },
-  // extraReducers(builder) {
-  //   builder
-  //     .addCase(fetchPosts.pending, (state, action) => {
-  //       state.status = 'loading';
-  //     })
-  //     .addCase(fetchPosts.fulfilled, (state, action) => {
-  //       state.status = 'succeeded';
-  //       let min = 1;
-  //       // adding the date and reaction
-  //       const loadedPosts = action.payload.map((post) => {
-  //         post.date = sub(new Date(), { minutes: min++ }).toDateString();
-  //         post.reactions = {
-  //           thumbsUp: 0,
-  //           wow: 0,
-  //           heart: 0,
-  //           rocket: 0,
-  //           coffee: 0,
-  //         };
-  //         return post;
-  //       });
+  extraReducers(builder) {
+    builder
+      .addCase(fetchPosts.pending, (state, action) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchPosts.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        let min = 1;
+        // adding the date and reaction
+        const loadedPosts = action.payload.map((post) => {
+          post.date = sub(new Date(), { minutes: min++ }).toISOString();
+          post.reactions = {
+            thumbsUp: 0,
+            wow: 0,
+            heart: 0,
+            rocket: 0,
+            coffee: 0,
+          };
+          return post;
+        });
 
-  //       //add any fetched posts to the array
-  //       state.posts = state.posts.concat(loadedPosts); // we can concat because of immer
-  //     })
-  //     .addCase(fetchPosts.rejected, (state, action) => {
-  //       state.status = 'failed';
-  //       state.error = action.error.message;
-  //     });
-  // },
+        // add any fetched posts to the array
+        // filter out posts we already have by ID
+        const existingIds = new Set(state.posts.map((p) => p.id));
+        const newPosts = loadedPosts.filter((p) => !existingIds.has(p.id));
+
+        state.posts = state.posts.concat(newPosts);
+      })
+      .addCase(fetchPosts.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      })
+      .addCase(addNewPost.fulfilled, (state, action) => {
+        action.payload.userId = Number(action.payload.userId);
+        action.payload.date = new Date().toISOString();
+        action.payload.reactions = {
+          thumbsUp: 0,
+          wow: 0,
+          heart: 0,
+          rocket: 0,
+          coffee: 0,
+        };
+
+        console.log(action.payload);
+
+        state.posts.push(action.payload);
+      });
+  },
 });
 
 export const selectAllPosts = (state) => state.posts.posts;
+export const getPostsStatus = (state) => state.posts.status;
+export const getPostsError = (state) => state.posts.error;
 export const { postAdded, reactionAdded } = postSlice.actions;
 export default postSlice.reducer;

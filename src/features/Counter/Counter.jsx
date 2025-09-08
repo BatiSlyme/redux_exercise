@@ -11,37 +11,46 @@ const Counter = () => {
   return (
     <section>
       <p>{count}</p>
-      <div>
-        <button
-          onClick={() => {
-            dispatch(increment());
-          }}
-        >
-          +
-        </button>
-        <button
-          onClick={() => {
-            dispatch(decrement());
-          }}
-        >
-          -
-        </button>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          // justifyContent: 'center',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <button
+            onClick={() => {
+              dispatch(increment());
+            }}
+          >
+            +
+          </button>
+          <button
+            onClick={() => {
+              dispatch(decrement());
+            }}
+          >
+            -
+          </button>
 
-        <input
-          type="text"
-          value={incrementAmount}
-          onChange={(e) => setIncrementAmount(e.target.value)}
-        />
-        <button onClick={() => dispatch(incrementByAmount(addValue))}>
-          Add Amount
-        </button>
-        <button
-          onClick={() => {
-            dispatch(reset());
-          }}
-        >
-          reset
-        </button>
+          <input
+            type="text"
+            value={incrementAmount}
+            onChange={(e) => setIncrementAmount(e.target.value)}
+            style={{ width: 50 }}
+          />
+          <button onClick={() => dispatch(incrementByAmount(addValue))}>
+            Add Amount
+          </button>
+          <button
+            onClick={() => {
+              dispatch(reset());
+            }}
+          >
+            reset
+          </button>
+        </div>
       </div>
     </section>
   );

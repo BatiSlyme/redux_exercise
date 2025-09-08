@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { postAdded } from './postsSlice';
+import { addNewPost, postAdded } from './postsSlice';
 import { selectAllUsers } from '../Users/usersSlice';
 
 const AddPostForm = () => {
@@ -9,18 +9,30 @@ const AddPostForm = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [userId, setUserId] = useState('');
+  const [addRequestStatus, setAddRequestStatus] = useState('idle');
 
   const users = useSelector(selectAllUsers);
   const onTitleChanged = (e) => setTitle(e.target.value);
   const onContentChanged = (e) => setContent(e.target.value);
   const onAuthorChanged = (e) => setUserId(e.target.value);
 
-  const addNewPost = () => {
-    if (title && content && userId) {
-      dispatch(postAdded(title, content, userId));
+  const canSave =
+    [title, content, userId].every(Boolean) && addRequestStatus === 'idle';
+
+  const onSave = () => {
+    if (canSave) {
+      try {
+        setAddRequestStatus('pending');
+        dispatch(addNewPost({ title, body: content, userId })).unwrap(); // unwrap is added from redux toolkit -> returns a promise
+        setTitle('');
+        setContent('');
+        setUserId('');
+      } catch (error) {
+        console.error('Failed to save the post', error);
+      } finally {
+        setAddRequestStatus('idle');
+      }
     }
-    setTitle('');
-    setContent('');
   };
 
   const userOptions = users.map((user) => (
@@ -49,11 +61,12 @@ const AddPostForm = () => {
           value={content}
           onChange={onContentChanged}
         />
+        <label htmlFor="postAuthor">Author</label>
         <select id="postAuthor" value={userId} onChange={onAuthorChanged}>
           <option value=""></option>
           {userOptions}
         </select>
-        <button type="button" onClick={addNewPost}>
+        <button type="button" onClick={onSave} disabled={!canSave}>
           Save Post
         </button>
       </form>

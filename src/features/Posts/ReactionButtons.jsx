@@ -11,7 +11,7 @@ const reactionEmoji = {
 
 const ReactionButtons = ({ post }) => {
   const dispatch = useDispatch();
-  console.log(Object.entries(reactionEmoji));
+  // console.log(Object.entries(reactionEmoji));
 
   const reactionButtons = Object.entries(reactionEmoji).map(([name, emoji]) => {
     return (
