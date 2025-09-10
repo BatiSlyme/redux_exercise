@@ -5,13 +5,18 @@ import App from './App.jsx';
 import { store } from './app/store.js';
 import { Provider } from 'react-redux';
 import { fetchUsers } from './features/Users/usersSlice.js';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 store.dispatch(fetchUsers());
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
-      <App />
+      <Router>
+        <Routes>
+          <Route path="/*" element={<App />}></Route>
+        </Routes>
+      </Router>
     </Provider>
   </StrictMode>,
 );

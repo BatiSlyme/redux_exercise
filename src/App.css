@@ -61,3 +61,22 @@ select,
 textarea {
   width: 50%;
 }
+
+.Header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: brown;
+}
+
+ul {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+ul li {
+  list-style: none;
+  margin: 5px;
+}
