@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addNewPost, postAdded } from './postsSlice';
+import { addNewPost } from './postsSlice';
 import { selectAllUsers } from '../Users/usersSlice';
 import { useNavigate } from 'react-router-dom';
 

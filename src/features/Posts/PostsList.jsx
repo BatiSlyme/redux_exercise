@@ -1,30 +1,22 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { getPostsError, getPostsStatus, selectAllPosts } from './postsSlice';
-import { useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { getPostsError, getPostsStatus, selectPostIds } from './postsSlice';
+import { useMemo } from 'react';
 import PostsExcerp from './PostsExcerp';
 
 const PostsList = () => {
-  const posts = useSelector(selectAllPosts);
+  const orderedPostIds = useSelector(selectPostIds);
   const postsStatus = useSelector(getPostsStatus);
   const error = useSelector(getPostsError);
-
-  useEffect(() => {
-    console.log('posts changed');
-  }, [posts]);
 
   const content = useMemo(() => {
     if (postsStatus === 'loading') {
       return <p>Loading...</p>;
     } else if (postsStatus === 'succeeded') {
-      const orderedPosts = posts
-        .slice()
-        .sort((a, b) => b.date.localeCompare(a.date));
-
-      return orderedPosts.map((p) => <PostsExcerp post={p} key={p.id} />);
+      return orderedPostIds.map((p) => <PostsExcerp postId={p} key={p} />);
     } else if (postsStatus === 'failed') {
       return <p>{error}</p>;
     }
-  }, [error, posts, postsStatus]);
+  }, [error, orderedPostIds, postsStatus]);
 
   return (
     <section>
